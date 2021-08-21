@@ -54,7 +54,7 @@ def file_copy(source, destination, export_directory):
 def main(source, destination):
     # extensions to search for in the directories
     photo_ext = ('.jpg', '.jpeg', '.JPG', '.JPEG', '.png', '.PNG')
-    video_ext = ('.mov', '.m4v', '.mp4', '.wmv', '.wma', '.avi', '.MOV')
+    video_ext = ('.mov', '.m4v', '.mp4', '.wmv', '.wma', '.avi', '.MOV', '.MPG')
 
     photos = 0
     videos = 0
