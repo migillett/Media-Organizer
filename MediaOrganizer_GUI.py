@@ -89,10 +89,12 @@ class App(Tk):
 
     def browse_source(self):
         self.source_dir = filedialog.askdirectory(initialdir=self.source_dir, title='Select Source Directory')
+        self.source_entry.delete(0, END)
         self.source_entry.insert(0, self.source_dir)
         
     def browse_destination(self):
         self.dest_dir = filedialog.askdirectory(initialdir=self.source_dir, title='Select Destination Directory')
+        self.dest_entry.delete(0, END)
         self.dest_entry.insert(0, self.dest_dir)
 
     def start(self):
