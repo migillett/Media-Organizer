@@ -1,8 +1,14 @@
 from media_organize import media_organize
-from tkinter import *
-from tkinter import messagebox, ttk, filedialog, scrolledtext
 import logging
 import os
+from sys import exit
+
+try:
+    from tkinter import *
+    from tkinter import messagebox, ttk, filedialog, scrolledtext
+except ImportError as e:
+    exit('Please install tkinter using pip3 install tkinter')
+    
 
 
 class TextHandler(logging.Handler):
@@ -108,7 +114,6 @@ class App(Tk):
 
 
     def onExit(self):
-        from sys import exit
         exit()
 
 
