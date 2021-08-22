@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 
-# This program goes to a folder that the user specifies, looks for media files
-
 import os
 from shutil import copy
 from datetime import datetime
 from time import ctime
+import logging
 
 # CONFIG HERE ####################################
 # replace these with as many directories as you wish
@@ -24,9 +23,6 @@ def date_created(file):
     formatted_time = str(datetime.strptime(c_time, "%a %b %d %H:%M:%S %Y"))
     date = formatted_time.split(' ')[0]
     year = date.split('-')[0]
-
-    print(file, date)
-
     return year, date
 
 
@@ -35,7 +31,7 @@ def check_dir(directory):
         try:
             os.makedirs(directory)
         except PermissionError:
-            print('Insufficient permissions to create directory at', directory)
+            logging.error(f'Insufficient permissions to create directory at: {directory}')
 
 
 def file_copy(source, destination, export_directory):
@@ -48,10 +44,12 @@ def file_copy(source, destination, export_directory):
         # If the file doesn't already exist, copy it.
         if not os.path.exists(destination):
             copy(source, destination)
-            print('Copying {0} to {1}'.format(source, destination))
+            logging.info(f'Copied file: {source}')
+        else:
+            logging.info(f'File skipped: {source}')
 
 
-def main(source, destination):
+def media_organize(source, destination):
     # extensions to search for in the directories
     photo_ext = ('.jpg', '.jpeg', '.JPG', '.JPEG', '.png', '.PNG')
     video_ext = ('.mov', '.m4v', '.mp4', '.wmv', '.wma', '.avi', '.MOV', '.MPG')
@@ -79,9 +77,10 @@ def main(source, destination):
                 file_copy(filename, new_video, video_dir)
                 videos += 1
 
-    print(f'All media gathered from folder: {source}\n  {photos} photos copied\n  {videos} videos copied')
+    logging.info(f'\nAll media gathered from {source}')
+    logging.info(f'{photos} photos copied | {videos} videos copied')
 
 
 if __name__ == '__main__':
     for source in source_dir:
-        main(source, dest_dir)
+        media_organize(source, dest_dir)
