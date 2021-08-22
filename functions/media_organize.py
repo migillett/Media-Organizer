@@ -5,6 +5,7 @@ from shutil import copy
 from datetime import datetime
 from time import ctime
 import logging
+from functions.RAW_to_JPEG import raw_to_jpeg
 
 # CONFIG HERE ####################################
 # replace these with as many directories as you wish
@@ -49,9 +50,18 @@ def file_copy(source, destination, export_directory):
             logging.info(f'File skipped: {source}')
 
 
-def media_organize(source, destination):
+def media_organize(source, destination, rename=False, convert_raw=False):
+    # rename allows for the program to pull the file modification date and add it to the start of the filename.
+        # disabled by default
+    logging.info(f'\nFile renaming is set to: {rename}')
+
+    # this allows you to mass-convert RAW images to JPEG.
+        # disabled by default
+    logging.info(f'Converting RAW images to JPEG is set to: {convert_raw}\n')
+
     # extensions to search for in the directories
     photo_ext = ('.jpg', '.jpeg', '.JPG', '.JPEG', '.png', '.PNG')
+    raw_photo_ext = ('.CR2', '.ARW', '.NEF', '.CRW', '.DNG', '.TIF')
     video_ext = ('.mov', '.m4v', '.mp4', '.wmv', '.wma', '.avi', '.MOV', '.MPG')
 
     photos = 0
@@ -61,19 +71,34 @@ def media_organize(source, destination):
     for root, dirs, files in os.walk(source):
         for name in files:
             filename = os.path.join(root, name)
-
             y, date = date_created(filename)
 
             if filename.endswith(photo_ext):
-
                 final_folder = os.path.join(destination, 'photos', y)
-                new_photo = os.path.join(final_folder, f'{date}_{name}')
+
+                if rename:
+                    new_photo = os.path.join(final_folder, f'{date}_{name}')
+                else:
+                    new_photo = os.path.join(final_folder, name)
+
                 file_copy(filename, new_photo, final_folder)
                 photos += 1
 
+            elif filename.endswith(raw_photo_ext) and convert_raw:
+                final_folder = os.path.join(destination, 'photos', y)
+                check_dir(final_folder)
+                raw_to_jpeg(source_file=filename, destination_folder=final_folder)
+                photos += 1
+
+
             elif filename.endswith(video_ext):
                 video_dir = os.path.join(destination, 'videos', y)
-                new_video = os.path.join(video_dir, f'{date}_{name}')
+
+                if rename:
+                    new_video = os.path.join(video_dir, f'{date}_{name}')
+                else:
+                    new_video = os.path.join(video_dir, name)
+
                 file_copy(filename, new_video, video_dir)
                 videos += 1
 

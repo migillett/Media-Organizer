@@ -1,4 +1,4 @@
-from media_organize import media_organize
+from functions.media_organize import media_organize
 import logging
 import os
 from sys import exit
@@ -41,6 +41,9 @@ class App(Tk):
         self.source_dir = StringVar(self, value='')
         self.dest_dir = StringVar(self, value='')
 
+        self.rename_enable = BooleanVar(self, value=False)
+        self.convert_raw = BooleanVar(self, value=False)
+
         self.total_files = 0
         self.total_dirs = 0
 
@@ -49,8 +52,8 @@ class App(Tk):
         
     def start_gui(self, padding, entry_width):
         # Source
-        source_frame = ttk.LabelFrame(self, text='Source')
-        source_frame.grid(column=0, row=0, padx=padding, pady=padding, columnspan=2)
+        source_frame = ttk.LabelFrame(self, text='Source Directory')
+        source_frame.grid(column=0, row=0, padx=padding, pady=padding, columnspan=2, sticky='EW')
 
         select_source_button = ttk.Button(source_frame, text='Browse', command=self.browse_source)
         select_source_button.grid(column=0, row=0, padx=padding, pady=padding)
@@ -59,8 +62,8 @@ class App(Tk):
         self.source_entry.grid( column=1, row=0, padx=padding)
         
         # Destination
-        dest_frame = ttk.LabelFrame(self, text='Destination')
-        dest_frame.grid(column=0, row=1, padx=padding, pady=padding, columnspan=2)
+        dest_frame = ttk.LabelFrame(self, text='Destination Directory')
+        dest_frame.grid(column=0, row=1, padx=padding, pady=padding, columnspan=2, sticky='EW')
 
         select_dest_button = ttk.Button(dest_frame, text='Browse', command=self.browse_destination)
         select_dest_button.grid(column=0, row=0, padx=padding, pady=padding)
@@ -68,9 +71,21 @@ class App(Tk):
         self.dest_entry = Entry(dest_frame, textvariable=self.dest_dir, width=entry_width)
         self.dest_entry.grid( column=1, row=0, padx=padding)
 
+        # Options
+        opt_frame = ttk.LabelFrame(self, text='Options')
+        opt_frame.grid(column=0, row=2, columnspan=2, padx=padding, pady=padding, sticky='EW')
+
+            # rename files enable
+        self.rename_checkbox = Checkbutton(opt_frame, text='Rename Files', variable=self.rename_enable, onvalue=True, offvalue=False)
+        self.rename_checkbox.grid(column=0, row=0)
+
+            # convert raw images to jpeg
+        self.convert_raw_checkbox = Checkbutton(opt_frame, text='Convert RAW Images', variable=self.convert_raw, onvalue=True, offvalue=False)
+        self.convert_raw_checkbox.grid(column=1, row=0)
+
         # logs
         st = scrolledtext.ScrolledText(self)
-        st.grid(column=0, row=2, columnspan=2, sticky='EW')
+        st.grid(column=0, row=10, columnspan=2, sticky='EW')
         text_handler = TextHandler(st)
         logging.basicConfig(
             filename='media_organize.log',
@@ -81,21 +96,24 @@ class App(Tk):
 
         # Begin button
         start_button = ttk.Button(self, text='Start', command=self.start)
-        start_button.grid(column=0, row=3, pady=padding, sticky='E')
+        start_button.grid(column=0, row=11, pady=padding, sticky='E')
 
-        # cancel button
+        # Cancel button
         cancel_button = ttk.Button(self, text='Exit', command=self.onExit)
-        cancel_button.grid(column=1, row=3, pady=padding, sticky='W')
+        cancel_button.grid(column=1, row=11, pady=padding, sticky='W')
+
 
     def browse_source(self):
         self.source_dir = filedialog.askdirectory(initialdir=self.source_dir, title='Select Source Directory')
         self.source_entry.delete(0, END)
         self.source_entry.insert(0, self.source_dir)
         
+
     def browse_destination(self):
         self.dest_dir = filedialog.askdirectory(initialdir=self.source_dir, title='Select Destination Directory')
         self.dest_entry.delete(0, END)
         self.dest_entry.insert(0, self.dest_dir)
+
 
     def start(self):
         source = self.source_entry.get()
@@ -107,13 +125,20 @@ class App(Tk):
         else:
             logging.info(f'Source folder: {source}\nDestination folder: {destination}')
             logging.info('Starting folder analysis...')
-            for _, dirs, files in os.walk(self.source_dir):
+
+            for _, dirs, files in os.walk(source):
                 self.total_files += len(files)
                 self.total_dirs += len(dirs)
-            logging.info(f'\nAnalysis Complete - Total Files: {self.total_files} | Directories: {self.total_dirs}\n')
-            logging.info('Starting file copy')
-            media_organize(source=self.source_dir, destination=self.dest_dir)
 
+            logging.info(f'\nAnalysis Complete - Total Files: {self.total_files} | Subdirectories: {self.total_dirs}\n')
+            logging.info('Starting file copy')
+
+            media_organize(
+                source=source,
+                destination=destination,
+                rename=self.rename_enable.get(),
+                convert_raw=self.convert_raw.get()
+            )
 
     def onExit(self):
         exit()
