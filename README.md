@@ -1,4 +1,4 @@
-![image](https://github.com/migillett/Media-Organizer/blob/main/screenshot.PNG)
+![image](https://github.com/migillett/Media-Organizer/blob/main/screenshot_V2.PNG)
 
 # Media-Organizer
 This simple Python 3 program walks through each file and directory of a given folder and searches for photos and videos. It then copies them to a destination and organizes them into folders based on date created.
